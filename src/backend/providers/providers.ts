@@ -1,7 +1,6 @@
-import { makeProviders, makeStandardFetcher, targets } from '@movie-web/providers';
-
-import { isExtensionActiveCached } from '@/backend/extension/messaging';
-import { makeExtensionFetcher, makeLoadBalancedSimpleProxyFetcher } from '@/backend/providers/fetchers';
+import { makeExtensionFetcher, makeLoadBalancedSimpleProxyFetcher } from './fetchers';
+import { makeProviders, makeStandardFetcher, targets } from '../../../lib';
+import { isExtensionActiveCached } from '../extension/messaging';
 
 export function getProviders() {
   if (isExtensionActiveCached()) {

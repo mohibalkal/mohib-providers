@@ -1,7 +1,6 @@
 import { flags } from '@/entrypoint/utils/targets';
 import { SourcererOutput, makeSourcerer } from '@/providers/base';
 import { MovieScrapeContext, ShowScrapeContext } from '@/utils/context';
-import { fetchWithTimeout } from '@/utils/fetch';
 
 export const baseUrl = 'https://uira.live';
 
@@ -32,27 +31,33 @@ async function comboScraper(ctx: MovieScrapeContext | ShowScrapeContext): Promis
   const title = ctx.media.title;
   const year = 'year' in ctx.media ? ctx.media.year : undefined;
 
-  const searchUrl = `${baseUrl}/api/search?query=${encodeURIComponent(title)}${year ? `&year=${year}` : ''}`;
-  const searchResponse = await fetchWithTimeout(searchUrl, { headers });
+  const searchUrl = `/api/search?query=${encodeURIComponent(title)}${year ? `&year=${year}` : ''}`;
+  const searchResponse = await ctx.fetcher(searchUrl, {
+    baseUrl,
+    headers,
+  });
 
   if (!searchResponse.ok) {
     throw new Error('Failed to search for media');
   }
 
-  const searchData = (await searchResponse.json()) as SearchResponse;
+  const searchData = searchResponse as SearchResponse;
   if (!searchData.results || searchData.results.length === 0) {
     return { embeds: [] };
   }
 
   const mediaId = searchData.results[0].id;
-  const streamUrl = `${baseUrl}/api/video/${mediaId}`;
-  const streamResponse = await fetchWithTimeout(streamUrl, { headers });
+  const streamUrl = `/api/video/${mediaId}`;
+  const streamResponse = await ctx.fetcher(streamUrl, {
+    baseUrl,
+    headers,
+  });
 
   if (!streamResponse.ok) {
     throw new Error('Failed to fetch stream data');
   }
 
-  const streamData = (await streamResponse.json()) as StreamResponse;
+  const streamData = streamResponse as StreamResponse;
   if (!streamData.url) {
     return { embeds: [] };
   }

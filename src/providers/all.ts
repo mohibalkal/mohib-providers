@@ -84,8 +84,6 @@ export function gatherAllSources(): Array<Sourcerer> {
     mp4hydraScraper, // Mp4Hydra
     primewireScraper, // Primewire
     hindiScraper, // Jalebi scraper
-    uiraScraper, // Uira
-    autoembedScraper, // AutoEmbed
     flixhqScraper,
     remotestreamScraper,
     kissAsianScraper,
@@ -109,6 +107,8 @@ export function gatherAllSources(): Array<Sourcerer> {
     moviplusScraper,
     filmxyScraper,
     netMirrorScraper,
+    uiraScraper,
+    autoembedScraper,
   ];
 }
 

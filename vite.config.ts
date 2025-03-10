@@ -23,9 +23,12 @@ export default defineConfig((env) => ({
   build: {
     minify: false,
     rollupOptions: {
-      external: Object.keys(pkg.dependencies),
+      external: [...Object.keys(pkg.dependencies), '@movie-web/providers'],
       output: {
-        globals: Object.fromEntries(Object.keys(pkg.dependencies).map((v) => [v, v])),
+        globals: {
+          ...Object.fromEntries(Object.keys(pkg.dependencies).map((v) => [v, v])),
+          '@movie-web/providers': '@movie-web/providers',
+        },
       },
     },
     outDir: 'lib',

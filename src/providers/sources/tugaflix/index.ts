@@ -11,13 +11,17 @@ export const tugaflixScraper = makeSourcerer({
   id: 'tugaflix',
   name: 'Tugaflix',
   rank: 73,
-  flags: [flags.IP_LOCKED],
+  flags: [flags.IP_LOCKED, flags.CORS_ALLOWED],
+  disabled: false,
   scrapeMovie: async (ctx) => {
     const searchResults = parseSearch(
       await ctx.proxiedFetcher<string>('/filmes/', {
         baseUrl,
         query: {
           s: ctx.media.title,
+        },
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
         },
       }),
     );
@@ -29,6 +33,9 @@ export const tugaflixScraper = makeSourcerer({
     const videoPage = await ctx.proxiedFetcher<string>(url, {
       method: 'POST',
       body: new URLSearchParams({ play: '' }),
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      },
     });
     const $ = load(videoPage);
 
@@ -40,6 +47,11 @@ export const tugaflixScraper = makeSourcerer({
 
       const embedPage = await ctx.proxiedFetcher.full(
         embedUrl.startsWith('https://') ? embedUrl : `https://${embedUrl}`,
+        {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          },
+        },
       );
 
       const finalUrl = load(embedPage.body)('a:contains("Download Filme")').attr('href');
@@ -71,6 +83,9 @@ export const tugaflixScraper = makeSourcerer({
         query: {
           s: ctx.media.title,
         },
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        },
       }),
     );
     if (searchResults.length === 0) throw new NotFoundError('No watchable item found');
@@ -83,6 +98,9 @@ export const tugaflixScraper = makeSourcerer({
     const videoPage = await ctx.proxiedFetcher(url, {
       method: 'POST',
       body: new URLSearchParams({ [`S${s}E${e}`]: '' }),
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      },
     });
 
     const embedUrl = load(videoPage)('iframe[name="player"]').attr('src');
@@ -91,6 +109,9 @@ export const tugaflixScraper = makeSourcerer({
     const playerPage = await ctx.proxiedFetcher(embedUrl.startsWith('https:') ? embedUrl : `https:${embedUrl}`, {
       method: 'POST',
       body: new URLSearchParams({ submit: '' }),
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      },
     });
 
     const embeds: SourcererEmbed[] = [];

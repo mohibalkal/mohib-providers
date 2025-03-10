@@ -18,13 +18,15 @@ export const goMoviesScraper = makeSourcerer({
   id: 'gomovies',
   name: 'GOmovies',
   rank: 60,
-  disabled: true,
+  disabled: false,
   flags: [flags.CORS_ALLOWED],
   async scrapeShow(ctx) {
     const search = await ctx.proxiedFetcher(`/search/${ctx.media.title.replaceAll(/[^a-z0-9A-Z]/g, '-')}`, {
       method: 'GET',
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
       },
       baseUrl: gomoviesBase,
     });
@@ -42,13 +44,13 @@ export const goMoviesScraper = makeSourcerer({
     const targetMedia = mediaData.find((m) => m.name === ctx.media.title);
     if (!targetMedia?.path) throw new NotFoundError('Media not found');
 
-    // Example movie path: /movie/watch-{slug}-{id}
-    // Example series path: /tv/watch-{slug}-{id}
     let mediaId = targetMedia.path.split('-').pop()?.replace('/', '');
 
     const seasons = await ctx.proxiedFetcher<string>(`/ajax/v2/tv/seasons/${mediaId}`, {
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
       },
       baseUrl: gomoviesBase,
     });
@@ -68,6 +70,8 @@ export const goMoviesScraper = makeSourcerer({
     const episodes = await ctx.proxiedFetcher<string>(`/ajax/v2/season/episodes/${targetSeason.dataId}`, {
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
       },
       baseUrl: gomoviesBase,
     });
@@ -90,6 +94,8 @@ export const goMoviesScraper = makeSourcerer({
       baseUrl: gomoviesBase,
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
       },
     });
 
@@ -145,6 +151,8 @@ export const goMoviesScraper = makeSourcerer({
       method: 'GET',
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
       },
       baseUrl: gomoviesBase,
     });
@@ -164,13 +172,13 @@ export const goMoviesScraper = makeSourcerer({
     );
     if (!targetMedia?.path) throw new NotFoundError('Media not found');
 
-    // Example movie path: /movie/watch-{slug}-{id}
-    // Example series path: /tv/watch-{slug}-{id}
     const mediaId = targetMedia.path.split('-').pop()?.replace('/', '');
 
     const sources = await ctx.proxiedFetcher<string>(`ajax/movie/episodes/${mediaId}`, {
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
       },
       baseUrl: gomoviesBase,
     });

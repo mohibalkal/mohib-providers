@@ -16,7 +16,11 @@ const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => 
   // if i explicitly keep the base ww1 while the load balancers thinks ww2 is optimal
   // it will keep redirecting all the requests
   // not only that but the last iframe request will fail
-  const homePage = await ctx.proxiedFetcher.full(baseUrl);
+  const homePage = await ctx.proxiedFetcher.full(baseUrl, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    },
+  });
   baseUrl = new URL(homePage.finalUrl).origin;
 
   const searchSlug = ctx.media.title
@@ -32,6 +36,9 @@ const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => 
       query: {
         type: ctx.media.type === 'movie' ? 'movie' : 'tvs',
       },
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      },
     }),
   );
 
@@ -39,11 +46,8 @@ const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => 
   searchPage$('.item').each((_, element) => {
     const [, title, year] =
       searchPage$(element)
-        // the title emement on their page is broken
-        // it just breaks when the titles are too big
         .find('.imagecover a')
         .attr('title')
-        // ex-titles: Home Alone 1990, Avengers Endgame (2019), The Curse (2023-)
         ?.match(/^(.*?)\s*(?:\(?\s*(\d{4})(?:\s*-\s*\d{0,4})?\s*\)?)?\s*$/) || [];
     const url = searchPage$(element).find('a').attr('href');
 
@@ -60,6 +64,9 @@ const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => 
   const watchPage = await ctx.proxiedFetcher.full(watchPageUrl, {
     baseUrl,
     readHeaders: ['Set-Cookie'],
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    },
   });
 
   ctx.progress(50);
@@ -93,6 +100,7 @@ const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => 
         }),
         headers: {
           cookie,
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
         },
       }),
     );
@@ -130,6 +138,7 @@ const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => 
         }),
         headers: {
           cookie,
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
         },
       }),
     );

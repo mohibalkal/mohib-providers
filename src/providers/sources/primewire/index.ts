@@ -17,6 +17,9 @@ async function search(ctx: ScrapeContext, imdbId: string) {
       key: primewireApiKey,
       imdb_id: imdbId,
     },
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    },
   });
 
   return searchResult.id;
@@ -70,12 +73,16 @@ export const primewireScraper = makeSourcerer({
   name: 'Primewire',
   rank: 85,
   flags: [flags.CORS_ALLOWED],
+  disabled: false,
   async scrapeMovie(ctx) {
     if (!ctx.media.imdbId) throw new Error('No imdbId provided');
     const searchResult = await search(ctx, ctx.media.imdbId);
 
     const title = await ctx.proxiedFetcher<string>(`movie/${searchResult}`, {
       baseUrl: primewireBase,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      },
     });
 
     const embeds = await getStreams(title);
@@ -90,6 +97,9 @@ export const primewireScraper = makeSourcerer({
 
     const season = await ctx.proxiedFetcher<string>(`tv/${searchResult}`, {
       baseUrl: primewireBase,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      },
     });
 
     const seasonPage = load(season);
@@ -104,6 +114,9 @@ export const primewireScraper = makeSourcerer({
 
     const title = await ctx.proxiedFetcher<string>(episodeLink, {
       baseUrl: primewireBase,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      },
     });
 
     const embeds = await getStreams(title);

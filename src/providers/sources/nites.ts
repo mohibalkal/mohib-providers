@@ -1,5 +1,6 @@
 import { load } from 'cheerio';
 
+import { flags } from '@/entrypoint/utils/targets';
 import { SourcererOutput, makeSourcerer } from '@/providers/base';
 import { compareMedia } from '@/utils/compare';
 import { MovieScrapeContext, ShowScrapeContext } from '@/utils/context';
@@ -16,6 +17,10 @@ async function comboScraper(ctx: ShowScrapeContext | MovieScrapeContext): Promis
       query_vars: 'mixed',
       search: ctx.media.title,
     }),
+    headers: {
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    },
   });
 
   const $search = load(searchPage);
@@ -42,7 +47,14 @@ async function comboScraper(ctx: ShowScrapeContext | MovieScrapeContext): Promis
     );
   }
 
-  const watchPage = load(await ctx.proxiedFetcher(watchPageUrl));
+  const watchPage = load(
+    await ctx.proxiedFetcher(watchPageUrl, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      },
+    }),
+  );
 
   // it embeds vidsrc when it bflix does not has the stream
   // i think all shows embed vidsrc, not sure
@@ -54,7 +66,14 @@ async function comboScraper(ctx: ShowScrapeContext | MovieScrapeContext): Promis
 
   if (!embedUrl) throw new Error('Failed to find embed url');
 
-  const embedPage = load(await ctx.proxiedFetcher(embedUrl));
+  const embedPage = load(
+    await ctx.proxiedFetcher(embedUrl, {
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      },
+    }),
+  );
 
   const url = embedPage('iframe').attr('src');
   if (!url) throw new Error('Failed to find embed url');
@@ -73,7 +92,8 @@ export const nitesScraper = makeSourcerer({
   id: 'nites',
   name: 'Nites',
   rank: 90,
-  flags: [],
+  flags: [flags.CORS_ALLOWED],
+  disabled: false,
   scrapeMovie: comboScraper,
   scrapeShow: comboScraper,
 });

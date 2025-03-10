@@ -14,6 +14,9 @@ async function comboScraper(ctx: ShowScrapeContext | MovieScrapeContext): Promis
     query: {
       s: ctx.media.title,
     },
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    },
   });
 
   ctx.progress(40);
@@ -23,7 +26,6 @@ async function comboScraper(ctx: ShowScrapeContext | MovieScrapeContext): Promis
 
   $search('li').each((_, element) => {
     const title = $search(element).find('h2').first().text().trim();
-    // the year is always present, but I sitll decided to make it nullable since the impl isn't as future-proof
     const year = Number($search(element).find('.text-xs > span').eq(1).text().trim()) || undefined;
     const url = $search(element).find('a').attr('href');
 
@@ -46,11 +48,15 @@ async function comboScraper(ctx: ShowScrapeContext | MovieScrapeContext): Promis
     );
   }
 
-  const watchPage = load(await ctx.proxiedFetcher(watchPageUrl));
+  const watchPage = load(await ctx.proxiedFetcher(watchPageUrl, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    },
+  }));
 
   ctx.progress(80);
 
-  const url = watchPage('iframe').first().attr('src'); // I couldn't think of a better way
+  const url = watchPage('iframe').first().attr('src');
   if (!url) throw new Error('Failed to find embed url');
 
   ctx.progress(90);
@@ -69,7 +75,8 @@ export const catflixScraper = makeSourcerer({
   id: 'catflix',
   name: 'Catflix',
   rank: 122,
-  flags: [],
+  flags: [flags.CORS_ALLOWED],
+  disabled: false,
   scrapeMovie: comboScraper,
   scrapeShow: comboScraper,
 });

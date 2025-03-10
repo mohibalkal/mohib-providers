@@ -75,6 +75,8 @@ import { whvxScraper } from './sources/whvx';
 export function gatherAllSources(): Array<Sourcerer> {
   // all sources are gathered here
   return [
+    uiraScraper, // Uira (rank: 180)
+    autoembedScraper, // AutoEmbed (rank: 175)
     whvxScraper, // WHVX
     mirrorsScraper, // WHVX Mirrors
     ee3Scraper, // EE3
@@ -107,8 +109,6 @@ export function gatherAllSources(): Array<Sourcerer> {
     moviplusScraper,
     filmxyScraper,
     netMirrorScraper,
-    uiraScraper,
-    autoembedScraper,
   ];
 }
 

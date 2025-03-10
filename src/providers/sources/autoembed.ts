@@ -10,6 +10,18 @@ export const headers = {
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
 };
 
+const captionTypes = {
+  srt: 'srt',
+  vtt: 'vtt',
+} as const;
+
+function getCaptionTypeFromUrl(url: string): 'srt' | 'vtt' | null {
+  const extensions = Object.keys(captionTypes);
+  const type = extensions.find((v) => url.endsWith(`.${v}`));
+  if (!type) return null;
+  return type as 'srt' | 'vtt';
+}
+
 interface SearchResult {
   id: string;
   title: string;
@@ -19,19 +31,12 @@ interface SearchResponse {
   results: SearchResult[];
 }
 
-interface StreamSource {
-  file: string;
-  label?: string;
-}
-
-interface StreamTrack {
-  file: string;
-  label: string;
-}
-
 interface StreamResponse {
-  sources: StreamSource[];
-  tracks?: StreamTrack[];
+  url: string;
+  subtitles?: Array<{
+    lang: string;
+    url: string;
+  }>;
 }
 
 async function comboScraper(ctx: MovieScrapeContext | ShowScrapeContext): Promise<SourcererOutput> {
@@ -39,7 +44,7 @@ async function comboScraper(ctx: MovieScrapeContext | ShowScrapeContext): Promis
   const year = 'year' in ctx.media ? ctx.media.year : undefined;
 
   const searchUrl = `/api/search?query=${encodeURIComponent(title)}${year ? `&year=${year}` : ''}`;
-  const searchResponse = await ctx.fetcher(searchUrl, {
+  const searchResponse = await ctx.proxiedFetcher(searchUrl, {
     baseUrl,
     headers,
   });
@@ -55,7 +60,7 @@ async function comboScraper(ctx: MovieScrapeContext | ShowScrapeContext): Promis
 
   const mediaId = searchData.results[0].id;
   const streamUrl = `/api/video/${mediaId}`;
-  const streamResponse = await ctx.fetcher(streamUrl, {
+  const streamResponse = await ctx.proxiedFetcher(streamUrl, {
     baseUrl,
     headers,
   });
@@ -65,23 +70,35 @@ async function comboScraper(ctx: MovieScrapeContext | ShowScrapeContext): Promis
   }
 
   const streamData = streamResponse as StreamResponse;
-  if (!streamData.sources || streamData.sources.length === 0) {
+  if (!streamData.url) {
     return { embeds: [] };
   }
 
+  const stream = {
+    id: 'autoembed-primary',
+    type: 'hls' as const,
+    playlist: streamData.url,
+    flags: [flags.CORS_ALLOWED],
+    captions:
+      streamData.subtitles?.map((sub) => ({
+        id: `autoembed-${sub.lang}`,
+        url: sub.url,
+        language: sub.lang,
+        type: getCaptionTypeFromUrl(sub.url) ?? 'srt',
+        hasCorsRestrictions: false,
+      })) ?? [],
+  };
+
   return {
-    embeds: streamData.sources.map((source, index) => ({
-      embedId: `autoembed-${index}`,
-      url: source.file,
-      quality: source.label || 'auto',
-    })),
+    stream: [stream],
+    embeds: [],
   };
 }
 
 export const autoembedScraper = makeSourcerer({
   id: 'autoembed',
   name: 'AutoEmbed',
-  rank: 175,
+  rank: 180,
   disabled: false,
   flags: [flags.CORS_ALLOWED],
   scrapeMovie: comboScraper,

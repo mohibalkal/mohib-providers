@@ -8,7 +8,7 @@ export const vidsrcScraper = makeSourcerer({
   name: 'VidSrc',
   rank: 90,
   disabled: false,
-  flags: [flags.CORS_ALLOWED, flags.CF_BLOCKED],
+  flags: [flags.CORS_ALLOWED],
   scrapeMovie,
   scrapeShow,
 });

@@ -2,6 +2,18 @@ import { flags } from '@/entrypoint/utils/targets';
 import { SourcererOutput, makeSourcerer } from '@/providers/base';
 import { MovieScrapeContext, ShowScrapeContext } from '@/utils/context';
 
+const captionTypes = {
+  srt: 'srt',
+  vtt: 'vtt',
+} as const;
+
+function getCaptionTypeFromUrl(url: string): 'srt' | 'vtt' | null {
+  const extensions = Object.keys(captionTypes);
+  const type = extensions.find((v) => url.endsWith(`.${v}`));
+  if (!type) return null;
+  return type as 'srt' | 'vtt';
+}
+
 export const baseUrl = 'https://uira.live';
 
 export const headers = {
@@ -32,7 +44,7 @@ async function comboScraper(ctx: MovieScrapeContext | ShowScrapeContext): Promis
   const year = 'year' in ctx.media ? ctx.media.year : undefined;
 
   const searchUrl = `/api/search?query=${encodeURIComponent(title)}${year ? `&year=${year}` : ''}`;
-  const searchResponse = await ctx.fetcher(searchUrl, {
+  const searchResponse = await ctx.proxiedFetcher(searchUrl, {
     baseUrl,
     headers,
   });
@@ -48,7 +60,7 @@ async function comboScraper(ctx: MovieScrapeContext | ShowScrapeContext): Promis
 
   const mediaId = searchData.results[0].id;
   const streamUrl = `/api/video/${mediaId}`;
-  const streamResponse = await ctx.fetcher(streamUrl, {
+  const streamResponse = await ctx.proxiedFetcher(streamUrl, {
     baseUrl,
     headers,
   });
@@ -62,13 +74,24 @@ async function comboScraper(ctx: MovieScrapeContext | ShowScrapeContext): Promis
     return { embeds: [] };
   }
 
+  const stream = {
+    id: 'uira-primary',
+    type: 'hls' as const,
+    playlist: streamData.url,
+    flags: [flags.CORS_ALLOWED],
+    captions:
+      streamData.subtitles?.map((sub) => ({
+        id: `uira-${sub.lang}`,
+        url: sub.url,
+        language: sub.lang,
+        type: getCaptionTypeFromUrl(sub.url) ?? 'srt',
+        hasCorsRestrictions: false,
+      })) ?? [],
+  };
+
   return {
-    embeds: [
-      {
-        embedId: 'uira-primary',
-        url: streamData.url,
-      },
-    ],
+    stream: [stream],
+    embeds: [],
   };
 }
 

@@ -77,6 +77,7 @@ export const autoembedScraper = makeSourcerer({
   id: 'autoembed',
   name: 'AutoEmbed',
   rank: 175,
+  disabled: false,
   flags: [flags.CORS_ALLOWED],
   scrapeMovie: comboScraper,
   scrapeShow: comboScraper,
